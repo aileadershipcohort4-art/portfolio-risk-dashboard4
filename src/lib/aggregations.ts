@@ -76,6 +76,41 @@ export function exposureByIndustryAndCategory(customers: ScoredCustomer[]): Indu
   return Array.from(map.values()).sort((a, b) => b.total - a.total);
 }
 
+export interface IndustryRiskSummary {
+  industry: string;
+  count: number;
+  avgRiskScore: number;
+  green: number;
+  amber: number;
+  red: number;
+  exposure: number;
+}
+
+export function industryRiskSummary(customers: ScoredCustomer[]): IndustryRiskSummary[] {
+  const map = new Map<string, IndustryRiskSummary>();
+  for (const c of customers) {
+    const existing = map.get(c.industrySector) ?? {
+      industry: c.industrySector,
+      count: 0,
+      avgRiskScore: 0,
+      green: 0,
+      amber: 0,
+      red: 0,
+      exposure: 0,
+    };
+    existing.count += 1;
+    existing.avgRiskScore += c.riskScore; // running sum, divided below
+    if (c.category === "Green") existing.green += 1;
+    if (c.category === "Amber") existing.amber += 1;
+    if (c.category === "Red") existing.red += 1;
+    existing.exposure += c.loanBalance;
+    map.set(c.industrySector, existing);
+  }
+  return Array.from(map.values())
+    .map((entry) => ({ ...entry, avgRiskScore: entry.avgRiskScore / entry.count }))
+    .sort((a, b) => b.avgRiskScore - a.avgRiskScore);
+}
+
 export function top10HighestRisk(customers: ScoredCustomer[]): ScoredCustomer[] {
   return [...customers].sort((a, b) => b.riskScore - a.riskScore).slice(0, 10);
 }

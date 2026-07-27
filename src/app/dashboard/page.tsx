@@ -21,6 +21,7 @@ import {
   averageRiskScore,
   exposureByIndustryAndCategory,
   generatePortfolioTrend,
+  industryRiskSummary,
   recommendedActions,
   summariseByCategory,
   top10HighestRisk,
@@ -98,6 +99,7 @@ export default function DashboardPage() {
   const categorySummary = summariseByCategory(customers);
   const totalExp = totalExposure(customers);
   const industryData = exposureByIndustryAndCategory(customers);
+  const industrySummary = industryRiskSummary(customers);
   const top10 = top10HighestRisk(customers);
   const avgScore = averageRiskScore(customers);
   const trend = generatePortfolioTrend(avgScore);
@@ -278,6 +280,54 @@ export default function DashboardPage() {
               </BarChart>
             </ResponsiveContainer>
           </div>
+        </div>
+      </div>
+
+      {/* 4b. Industry Risk Summary table */}
+      <div className="mt-4 rounded-xl border bg-[var(--surface)] p-5 shadow-sm" style={{ borderColor: "var(--border)" }}>
+        <h3 className="text-sm font-semibold">Industry Risk Summary</h3>
+        <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
+          Sorted by average risk score, highest risk first
+        </p>
+        <div className="mt-4 overflow-x-auto">
+          <table className="w-full min-w-[640px] text-left text-sm">
+            <thead>
+              <tr className="border-b" style={{ borderColor: "var(--border)" }}>
+                <th className="py-2 pr-4 font-medium" style={{ color: "var(--muted)" }}>Industry Sector</th>
+                <th className="py-2 pr-4 font-medium" style={{ color: "var(--muted)" }}>Customers</th>
+                <th className="py-2 pr-4 font-medium" style={{ color: "var(--muted)" }}>Avg Risk Score</th>
+                <th className="py-2 pr-4 font-medium" style={{ color: "var(--muted)" }}>Green</th>
+                <th className="py-2 pr-4 font-medium" style={{ color: "var(--muted)" }}>Amber</th>
+                <th className="py-2 pr-4 font-medium" style={{ color: "var(--muted)" }}>Red</th>
+                <th className="py-2 pr-4 font-medium" style={{ color: "var(--muted)" }}>Exposure</th>
+              </tr>
+            </thead>
+            <tbody>
+              {industrySummary.map((row) => (
+                <tr key={row.industry} className="border-b" style={{ borderColor: "var(--border)" }}>
+                  <td className="py-2 pr-4 font-medium">{row.industry}</td>
+                  <td className="py-2 pr-4">{row.count}</td>
+                  <td className="py-2 pr-4">{row.avgRiskScore.toFixed(1)}</td>
+                  <td className="py-2 pr-4">
+                    <span className="rounded-md px-2 py-0.5 text-xs font-medium" style={{ backgroundColor: "var(--risk-green-bg)", color: CATEGORY_COLOURS.Green }}>
+                      {row.green}
+                    </span>
+                  </td>
+                  <td className="py-2 pr-4">
+                    <span className="rounded-md px-2 py-0.5 text-xs font-medium" style={{ backgroundColor: "var(--risk-amber-bg)", color: CATEGORY_COLOURS.Amber }}>
+                      {row.amber}
+                    </span>
+                  </td>
+                  <td className="py-2 pr-4">
+                    <span className="rounded-md px-2 py-0.5 text-xs font-medium" style={{ backgroundColor: "var(--risk-red-bg)", color: CATEGORY_COLOURS.Red }}>
+                      {row.red}
+                    </span>
+                  </td>
+                  <td className="py-2 pr-4">{fullCurrency(row.exposure)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
 
