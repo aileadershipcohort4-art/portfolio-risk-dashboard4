@@ -6,6 +6,7 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  LabelList,
   Line,
   LineChart,
   Pie,
@@ -209,8 +210,21 @@ export default function DashboardPage() {
                   {categoryChartData.map((entry) => (
                     <Cell key={entry.category} fill={CATEGORY_COLOURS[entry.category as RiskCategory]} />
                   ))}
+                  <LabelList
+                    dataKey="customers"
+                    position="top"
+                    style={{ fontSize: 11, fill: "var(--muted)" }}
+                  />
                 </Bar>
-                <Bar yAxisId="right" dataKey="exposure" name="Exposure" fill={EXPOSURE_COLOUR} radius={[4, 4, 0, 0]} />
+                <Bar yAxisId="right" dataKey="exposure" name="Exposure" fill={EXPOSURE_COLOUR} radius={[4, 4, 0, 0]}>
+                  <LabelList
+                    dataKey="exposure"
+                    position="top"
+                    style={{ fontSize: 11, fill: "var(--muted)" }}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    formatter={(v: any) => compactCurrency(Number(v))}
+                  />
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
           </div>
