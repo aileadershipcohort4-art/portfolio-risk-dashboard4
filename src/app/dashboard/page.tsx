@@ -7,10 +7,9 @@ import {
   CartesianGrid,
   Cell,
   LabelList,
+  Legend,
   Line,
   LineChart,
-  Pie,
-  PieChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -20,7 +19,7 @@ import { useAnalysis } from "@/context/AnalysisContext";
 import RiskBadge from "@/components/RiskBadge";
 import {
   averageRiskScore,
-  exposureByIndustry,
+  exposureByIndustryAndCategory,
   generatePortfolioTrend,
   recommendedActions,
   summariseByCategory,
@@ -37,17 +36,6 @@ const CATEGORY_COLOURS: Record<RiskCategory, string> = {
 };
 
 const EXPOSURE_COLOUR = "#333a42";
-
-const INDUSTRY_PALETTE = [
-  "#1f4267",
-  "#2c5a8c",
-  "#4a7ab0",
-  "#7098c2",
-  "#9db8d6",
-  "#5b6572",
-  "#8b95a1",
-  "#b8c0c9",
-];
 
 function compactCurrency(value: number): string {
   return new Intl.NumberFormat("en-AU", {
@@ -109,7 +97,7 @@ export default function DashboardPage() {
   const { customers } = result;
   const categorySummary = summariseByCategory(customers);
   const totalExp = totalExposure(customers);
-  const industryData = exposureByIndustry(customers);
+  const industryData = exposureByIndustryAndCategory(customers);
   const top10 = top10HighestRisk(customers);
   const avgScore = averageRiskScore(customers);
   const trend = generatePortfolioTrend(avgScore);
@@ -232,26 +220,62 @@ export default function DashboardPage() {
 
         <div className="rounded-xl border bg-[var(--surface)] p-5 shadow-sm" style={{ borderColor: "var(--border)" }}>
           <h3 className="text-sm font-semibold">Exposure by Industry Sector</h3>
-          <div className="mt-4 h-72">
+          <p className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
+            Exposure value per sector, broken down by risk category
+          </p>
+          <div className="mt-4 h-80">
             <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie
-                  data={industryData}
-                  dataKey="exposure"
-                  nameKey="industry"
-                  cx="50%"
-                  cy="50%"
-                  outerRadius={90}
+              <BarChart
+                data={industryData}
+                layout="vertical"
+                margin={{ left: 8, right: 24, top: 8, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                <XAxis
+                  type="number"
+                  tick={{ fontSize: 12 }}
                   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  label={(entry: any) => entry.industry ?? entry.name}
-                >
-                  {industryData.map((entry, index) => (
-                    <Cell key={entry.industry} fill={INDUSTRY_PALETTE[index % INDUSTRY_PALETTE.length]} />
-                  ))}
-                </Pie>
-                {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
-                <Tooltip formatter={(value: any) => fullCurrency(Number(value))} />
-              </PieChart>
+                  tickFormatter={(v: any) => compactCurrency(Number(v))}
+                />
+                <YAxis
+                  type="category"
+                  dataKey="industry"
+                  tick={{ fontSize: 12 }}
+                  width={110}
+                />
+                <Tooltip
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  formatter={(value: any, name: any) => [fullCurrency(Number(value)), name]}
+                />
+                <Legend wrapperStyle={{ fontSize: 12 }} />
+                <Bar dataKey="Green" stackId="risk" name="Green" fill={CATEGORY_COLOURS.Green}>
+                  <LabelList
+                    dataKey="Green"
+                    position="inside"
+                    style={{ fontSize: 10, fill: "#fff" }}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    formatter={(v: any) => (Number(v) > 0 ? compactCurrency(Number(v)) : "")}
+                  />
+                </Bar>
+                <Bar dataKey="Amber" stackId="risk" name="Amber" fill={CATEGORY_COLOURS.Amber}>
+                  <LabelList
+                    dataKey="Amber"
+                    position="inside"
+                    style={{ fontSize: 10, fill: "#fff" }}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    formatter={(v: any) => (Number(v) > 0 ? compactCurrency(Number(v)) : "")}
+                  />
+                </Bar>
+                <Bar dataKey="Red" stackId="risk" name="Red" fill={CATEGORY_COLOURS.Red} radius={[0, 4, 4, 0]}>
+                  <LabelList
+                    dataKey="Red"
+                    position="inside"
+                    style={{ fontSize: 10, fill: "#fff" }}
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    formatter={(v: any) => (Number(v) > 0 ? compactCurrency(Number(v)) : "")}
+                  />
+                </Bar>
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>

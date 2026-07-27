@@ -51,6 +51,31 @@ export function exposureByIndustry(customers: ScoredCustomer[]): IndustryExposur
     .sort((a, b) => b.exposure - a.exposure);
 }
 
+export interface IndustryCategoryExposure {
+  industry: string;
+  Green: number;
+  Amber: number;
+  Red: number;
+  total: number;
+}
+
+export function exposureByIndustryAndCategory(customers: ScoredCustomer[]): IndustryCategoryExposure[] {
+  const map = new Map<string, IndustryCategoryExposure>();
+  for (const c of customers) {
+    const existing = map.get(c.industrySector) ?? {
+      industry: c.industrySector,
+      Green: 0,
+      Amber: 0,
+      Red: 0,
+      total: 0,
+    };
+    existing[c.category] += c.loanBalance;
+    existing.total += c.loanBalance;
+    map.set(c.industrySector, existing);
+  }
+  return Array.from(map.values()).sort((a, b) => b.total - a.total);
+}
+
 export function top10HighestRisk(customers: ScoredCustomer[]): ScoredCustomer[] {
   return [...customers].sort((a, b) => b.riskScore - a.riskScore).slice(0, 10);
 }
